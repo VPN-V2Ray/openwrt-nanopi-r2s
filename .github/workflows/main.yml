@@ -48,6 +48,21 @@ jobs:
         run: |
           ./build.sh
           df -h
+      - name: Start SSH
+        uses: VPN-V2Ray/ssh2githubactions@main
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: Multi-thread compile 多线程编译
+        run: |
+          cd "$proj_dir/openwrt"
+          make download -j8
+          make -j$(($(nproc) + 1)) || make -j1 V=s
+      - name: 复制生成文件
+        run: |
+          cd "$proj_dir"
+          cp -a openwrt/bin/targets/*/* artifact
 
       - name: Assemble Artifact
         id: assemble_artifact
@@ -59,3 +74,6 @@ jobs:
         with:
           name: ${{ steps.assemble_artifact.outputs.artifact_name }}
           path: artifact
+
+
+
