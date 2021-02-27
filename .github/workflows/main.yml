@@ -54,16 +54,20 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-      - name: Multi-thread compile 多线程编译
+      - name: Multi-thread compile
         run: |
-          cd "$proj_dir/openwrt"
+          #cd "$proj_dir/openwrt"
+          cd openwrt
           make download -j8
           make -j$(($(nproc) + 1)) || make -j1 V=s
       - name: 复制生成文件
         run: |
           cd "$proj_dir"
           cp -a openwrt/bin/targets/*/* artifact
-
+      - name: Upload config file
+        run: |
+             #mkdir -p openwrt/artifact
+             cp openwrt/.config openwrt/artifact/OpenWRT_WR703N_v1_16MB_IPv6_OpenVPN.config
       - name: Assemble Artifact
         id: assemble_artifact
         run: |
